@@ -40,11 +40,16 @@ export default async function SemesterPage({
   const { supabase, branch, semester } = await loadBranchAndSemester(params.branchSlug, params.semesterSlug);
   if (!branch || !semester) notFound();
 
-  const { data: subjects } = await supabase
-    .from("subjects")
-    .select("id, name, slug, subject_code, chapters(id)")
-    .eq("semester_id", semester.id)
-    .order("order_index");
+  
+const { data: subjects, error: subjectsError } = await supabase
+  .from("subjects")
+  .select("id, name, slug, subject_code, chapters(id)")
+  .eq("semester_id", semester.id)
+  .order("order_index");
+
+if (subjectsError) {
+  console.error("Public subjects query failed:", subjectsError.message);
+}
 
   return (
     <>
