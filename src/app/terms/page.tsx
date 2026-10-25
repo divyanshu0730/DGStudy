@@ -3,14 +3,14 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | DGStudy",
+  title: "Terms of Service",
   description:
     "Read the terms and conditions for using DGStudy's Diploma and Polytechnic study notes website.",
   alternates: {
     canonical: "https://dgstudy.in/terms",
   },
   openGraph: {
-    title: "Terms of Service",
+    title: "Terms of Service | DGStudy",
     description:
       "Terms and conditions for using DGStudy and its educational resources.",
     url: "https://dgstudy.in/terms",

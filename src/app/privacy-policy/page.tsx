@@ -3,14 +3,14 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | DGStudy",
+  title: "Privacy Policy",
   description:
     "Read how DGStudy handles account information, study progress, bookmarks, download history, cookies, third-party services, and data deletion requests.",
   alternates: {
     canonical: "https://dgstudy.in/privacy-policy",
   },
   openGraph: {
-    title: "Privacy Policy",
+    title: "Privacy Policy | DGStudy",
     description:
       "Learn how DGStudy handles personal information and protects user privacy.",
     url: "https://dgstudy.in/privacy-policy",
