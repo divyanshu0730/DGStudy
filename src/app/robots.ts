@@ -1,11 +1,17 @@
+
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base = "https://dgstudy.in";
+
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/dashboard", "/admin"] }
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/dashboard", "/admin"],
+      },
     ],
-    sitemap: `${base}/sitemap.xml`
+    sitemap: `${base}/sitemap.xml`,
   };
 }
