@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import SiteHeader from "@/components/SiteHeader";
@@ -6,6 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 
 export default async function HomePage() {
   const supabase = createClient();
+
   const { data: branches } = await supabase
     .from("branches")
     .select("id, name, slug, description")
@@ -14,21 +14,27 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
+
       <main>
-        {/* Hero */}
-        <section className="mx-auto max-w-5xl px-4 pt-10 pb-8 text-center sm:pt-16">
+        {/* Hero Section */}
+        <section className="mx-auto max-w-5xl px-4 pb-8 pt-10 text-center sm:pt-16">
           <h1 className="text-3xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-            Diploma & Polytechnic Notes PDF
+            JUT Polytechnic Notes PDF
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
-            Find branch-wise, semester-wise and chapter-wise notes for
-            Diploma and Polytechnic students. Explore study materials
-            and notes PDFs to prepare for your semester exams with DGStudy.
+
+          <p className="mx-auto mt-4 max-w-2xl text-slate-600">
+            Find JUT Diploma and Polytechnic notes PDF organized
+            branch-wise, semester-wise and chapter-wise. Explore
+            syllabus-based study materials for Jharkhand University
+            of Technology students and prepare for your semester
+            examinations with DGStudy.
           </p>
+
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/branches" className="btn-primary w-full sm:w-auto">
               Explore Branches
             </Link>
+
             <Link href="/search" className="btn-secondary w-full sm:w-auto">
               Search Notes
             </Link>
@@ -38,11 +44,15 @@ export default async function HomePage() {
         {/* Choose Your Branch */}
         <section className="mx-auto max-w-5xl px-4 py-8">
           <h2 className="text-xl font-bold text-slate-900">
-            Diploma & Polytechnic Branches
+            JUT Diploma & Polytechnic Branches
           </h2>
+
           <p className="mt-1 text-sm text-slate-600">
-            Explore available subjects and notes across 8 Diploma/Polytechnic branches and 6 semesters.
+            Explore available study materials across 8 Diploma and
+            Polytechnic branches and 6 semesters. Notes are organized
+            by branch, semester, subject and chapter.
           </p>
+
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {(branches || []).slice(0, 12).map((b) => (
               <Link
@@ -51,12 +61,14 @@ export default async function HomePage() {
                 className="card p-4"
               >
                 <div className="text-2xl">🎓</div>
+
                 <div className="mt-2 text-sm font-semibold text-slate-900">
                   {b.name}
                 </div>
               </Link>
             ))}
           </div>
+
           {branches && branches.length > 12 && (
             <div className="mt-4 text-center">
               <Link
@@ -73,8 +85,13 @@ export default async function HomePage() {
         <section className="bg-white py-8">
           <div className="mx-auto max-w-3xl px-4 text-center">
             <h2 className="text-xl font-bold text-slate-900">
-              Find Notes by Branch, Semester and Chapter
+              Find JUT Notes by Branch, Semester and Chapter
             </h2>
+
+            <p className="mt-2 text-sm text-slate-600">
+              Follow these simple steps to find your available study materials.
+            </p>
+
             <div className="mt-5 flex flex-col items-center gap-2 text-sm font-medium text-slate-700">
               {[
                 "Choose Branch",
@@ -88,6 +105,7 @@ export default async function HomePage() {
                   className="flex w-full max-w-xs flex-col items-center"
                 >
                   <div className="card w-full py-2.5">{step}</div>
+
                   {i < arr.length - 1 && (
                     <div className="my-1 text-slate-300">↓</div>
                   )}
@@ -100,12 +118,13 @@ export default async function HomePage() {
         {/* Why DGStudy */}
         <section className="mx-auto max-w-5xl px-4 py-8">
           <h2 className="text-xl font-bold text-slate-900">
-            Why Study with DGStudy?
+            Why Choose DGStudy for JUT Polytechnic Notes?
           </h2>
+
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {[
-              ["📚", "Organized semester-wise study materials"],
-              ["📄", "Chapter-wise notes for focused learning"],
+              ["📚", "Branch-wise and semester-wise study materials"],
+              ["📄", "Chapter-wise notes PDFs for focused learning"],
               ["📱", "Mobile-friendly study platform"],
               ["👁️", "Easy in-app PDF viewing"],
               ["⬇️", "Download available notes PDFs"],
@@ -113,6 +132,7 @@ export default async function HomePage() {
             ].map(([icon, text]) => (
               <div key={text} className="card p-4">
                 <div className="text-xl">{icon}</div>
+
                 <div className="mt-2 text-sm font-medium text-slate-800">
                   {text}
                 </div>
@@ -125,18 +145,21 @@ export default async function HomePage() {
         <section className="bg-brand-50 py-10">
           <div className="mx-auto max-w-2xl px-4 text-center">
             <h2 className="text-xl font-bold text-slate-900">
-              Access Notes Without an Account
+              Access Available Notes Without an Account
             </h2>
+
             <p className="mt-2 text-sm text-slate-600">
               Browse, read and download available notes without signing in.
-              Creating a free account adds a personal dashboard, study
-              progress, completed chapters, bookmarks, recently viewed
-              content and download history.
+              Creating a free account gives you access to a personal
+              dashboard, study progress, completed chapters, bookmarks,
+              recently viewed content and download history.
             </p>
+
             <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/signup" className="btn-primary w-full sm:w-auto">
                 Create Account
               </Link>
+
               <Link href="/login" className="btn-secondary w-full sm:w-auto">
                 Login
               </Link>
@@ -144,6 +167,7 @@ export default async function HomePage() {
           </div>
         </section>
       </main>
+
       <SiteFooter />
     </>
   );
