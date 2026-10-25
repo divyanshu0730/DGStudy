@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Lists static pages plus every published branch/semester/subject/chapter URL.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base = "https://dgstudy.in";
   const supabase = createClient();
 
   const entries: MetadataRoute.Sitemap = [
