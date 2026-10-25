@@ -1,27 +1,45 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dgstudy.in";
+const siteUrl = "https://dgstudy.in";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+
   title: {
-    default: "DGStudy — Study Smart. Prepare Better.",
+    default: "DGStudy — Diploma & Polytechnic Notes PDF",
     template: "%s | DGStudy",
   },
+
   description:
-    "DGStudy is a mobile-first study platform for Diploma and Polytechnic students, offering branch-wise, semester-wise and chapter-wise notes and PDFs, with optional progress tracking and bookmarks.",
-  metadataBase: new URL(siteUrl),
+    "Explore branch-wise, semester-wise and chapter-wise notes PDFs for Diploma and Polytechnic students. Find organized study material and prepare for your semester exams with DGStudy.",
+
+  applicationName: "DGStudy",
+
   icons: {
     icon: "/dgstudy-logo.jpeg",
   },
+
   openGraph: {
-    title: "DGStudy — Study Smart. Prepare Better.",
+    title: "DGStudy — Diploma & Polytechnic Notes PDF",
     description:
-      "Branch-wise, semester-wise and chapter-wise notes for Diploma and Polytechnic students.",
+      "Find Diploma and Polytechnic study material with branch-wise, semester-wise and chapter-wise notes PDFs.",
     url: siteUrl,
     siteName: "DGStudy",
     type: "website",
+    locale: "en_IN",
+  },
+
+  twitter: {
+    card: "summary",
+    title: "DGStudy — Diploma & Polytechnic Notes PDF",
+    description:
+      "Explore organized notes PDFs for Diploma and Polytechnic students on DGStudy.",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
