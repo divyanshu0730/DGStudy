@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
-    default: "DGStudy — Diploma & Polytechnic Notes PDF",
+    default: "DGStudy — JUT Diploma & Polytechnic Notes PDF",
     template: "%s | DGStudy",
   },
 
   description:
-    "Explore branch-wise, semester-wise and chapter-wise notes PDFs for Diploma and Polytechnic students. Find organized study material and prepare for your semester exams with DGStudy.",
+    "Find JUT Diploma and Polytechnic notes PDFs organized branch-wise, semester-wise and chapter-wise. Explore syllabus-based study materials for Jharkhand University of Technology students.",
 
   applicationName: "DGStudy",
 
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "DGStudy — Diploma & Polytechnic Notes PDF",
+    title: "DGStudy — JUT Diploma & Polytechnic Notes PDF",
     description:
-      "Find Diploma and Polytechnic study material with branch-wise, semester-wise and chapter-wise notes PDFs.",
+      "Explore JUT Diploma study material with branch-wise, semester-wise and chapter-wise notes PDFs on DGStudy.",
     url: siteUrl,
     siteName: "DGStudy",
     type: "website",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary",
-    title: "DGStudy — Diploma & Polytechnic Notes PDF",
+    title: "DGStudy — JUT Diploma & Polytechnic Notes PDF",
     description:
-      "Explore organized notes PDFs for Diploma and Polytechnic students on DGStudy.",
+      "Explore syllabus-based notes PDFs for JUT Diploma and Polytechnic students.",
   },
 
   robots: {

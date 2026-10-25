@@ -41,8 +41,7 @@ export default async function HomePage() {
             Diploma & Polytechnic Branches
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Explore available subjects and notes across 12 Diploma/Polytechnic
-            branches and 6 semesters.
+            Explore available subjects and notes across 8 Diploma/Polytechnic branches and 6 semesters.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {(branches || []).slice(0, 12).map((b) => (
