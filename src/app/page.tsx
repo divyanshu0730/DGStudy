@@ -1,7 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "https://dgstudy.in/" },
+};
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -10,6 +15,8 @@ export default async function HomePage() {
     .from("branches")
     .select("id, name, slug, description")
     .order("order_index");
+
+  const branchCount = branches?.length ?? 0;
 
   return (
     <>
@@ -48,7 +55,7 @@ export default async function HomePage() {
           </h2>
 
           <p className="mt-1 text-sm text-slate-600">
-            Explore available study materials across 8 Diploma and
+            Explore available study materials across {branchCount} Diploma and
             Polytechnic branches and 6 semesters. Notes are organized
             by branch, semester, subject and chapter.
           </p>

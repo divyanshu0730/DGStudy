@@ -7,13 +7,18 @@ import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Branches",
-  description: "Browse all Diploma/Polytechnic branches on DGStudy — semester-wise subjects and chapter-wise notes."
+  description: "Browse all Diploma/Polytechnic branches on DGStudy — semester-wise subjects and chapter-wise notes.",
+  alternates: { canonical: "https://dgstudy.in/branches" }
 };
 
 export default async function BranchesPage() {
   const supabase = createClient();
-  const { data: branches, error } = await supabase.from("branches").select("id, name, slug, description").order("order_index");
-console.log("Branches query:", { branches, error });
+  const { data: branches } = await supabase
+    .from("branches")
+    .select("id, name, slug, description")
+    .order("order_index");
+
+  const branchCount = branches?.length ?? 0;
 
   return (
     <>
@@ -21,7 +26,7 @@ console.log("Branches query:", { branches, error });
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Branches" }]} />
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Choose Your Branch</h1>
-        <p className="mt-1 text-sm text-slate-600">All 12 branches, 6 semesters each.</p>
+        <p className="mt-1 text-sm text-slate-600">All {branchCount} branches, 6 semesters each.</p>
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {(branches || []).map((b) => (

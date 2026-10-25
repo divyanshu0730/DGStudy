@@ -6,7 +6,8 @@ import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search DGStudy for branches, semesters, subjects and chapters."
+  description: "Search DGStudy for branches, semesters, subjects and chapters.",
+  alternates: { canonical: "https://dgstudy.in/search" }
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: { q?: string } }) {

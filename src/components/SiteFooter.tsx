@@ -19,6 +19,7 @@ export default function SiteFooter() {
               <li><Link href="/search" className="hover:text-brand-700">Search</Link></li>
             </ul>
           </div>
+
           <div>
             <div className="mb-2 font-semibold text-slate-700">Account</div>
             <ul className="space-y-1 text-slate-500">
@@ -27,18 +28,20 @@ export default function SiteFooter() {
               <li><Link href="/dashboard" className="hover:text-brand-700">Dashboard</Link></li>
             </ul>
           </div>
+
           <div>
             <div className="mb-2 font-semibold text-slate-700">About</div>
             <ul className="space-y-1 text-slate-500">
-              <li><span>About DGStudy</span></li>
-              <li><span>Support / Contact</span></li>
+              <li><Link href="/about" className="hover:text-brand-700">About DGStudy</Link></li>
+              <li><Link href="/contact" className="hover:text-brand-700">Support / Contact</Link></li>
             </ul>
           </div>
+
           <div>
             <div className="mb-2 font-semibold text-slate-700">Legal</div>
             <ul className="space-y-1 text-slate-500">
-              <li><span>Privacy Policy</span></li>
-              <li><span>Terms of Service</span></li>
+              <li><Link href="/privacy-policy" className="hover:text-brand-700">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-brand-700">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
