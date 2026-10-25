@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Contact DGStudy | Support",
+  title: "Contact and Support",
   description:
     "Contact DGStudy for questions, feedback, notes corrections, or support related to Diploma and Polytechnic study materials.",
   alternates: {

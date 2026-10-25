@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "About DGStudy | Diploma Notes for JUT Students",
@@ -8,7 +10,7 @@ export const metadata: Metadata = {
     canonical: "https://dgstudy.in/about",
   },
   openGraph: {
-    title: "About DGStudy | Diploma Notes for JUT Students",
+    title: "About DGStudy",
     description:
       "Explore DGStudy, a notes platform for JUT Diploma and Polytechnic students.",
     url: "https://dgstudy.in/about",
@@ -18,33 +20,39 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-brand-800">About DGStudy</h1>
+    <>
+      <SiteHeader />
 
-      <p className="mt-4 leading-7 text-slate-600">
-        DGStudy is a study resource designed to help Diploma and Polytechnic
-        students find their study notes in one place.
-      </p>
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <h1 className="text-2xl font-bold text-brand-800">About DGStudy</h1>
 
-      <p className="mt-4 leading-7 text-slate-600">
-        The platform is intended especially for students studying under
-        Jharkhand University of Technology (JUT) and other Diploma students
-        looking for organized study material.
-      </p>
+        <p className="mt-4 leading-7 text-slate-600">
+          DGStudy is a study resource designed to help Diploma and Polytechnic
+          students find their study notes in one place.
+        </p>
 
-      <h2 className="mt-6 text-lg font-semibold text-slate-800">
-        How notes are organized
-      </h2>
+        <p className="mt-4 leading-7 text-slate-600">
+          The platform is intended especially for students studying under
+          Jharkhand University of Technology (JUT) and other Diploma students
+          looking for organized study material.
+        </p>
 
-      <p className="mt-2 leading-7 text-slate-600">
-        Notes are organized by branch, semester, subject and chapter so that
-        students can find relevant study material more easily.
-      </p>
+        <h2 className="mt-6 text-lg font-semibold text-slate-800">
+          How notes are organized
+        </h2>
 
-      <p className="mt-4 leading-7 text-slate-600">
-        Our goal is to make study resources easier to access and help students
-        prepare for their examinations.
-      </p>
-    </main>
+        <p className="mt-2 leading-7 text-slate-600">
+          Notes are organized by branch, semester, subject and chapter so that
+          students can find relevant study material more easily.
+        </p>
+
+        <p className="mt-4 leading-7 text-slate-600">
+          Our goal is to make study resources easier to access and help students
+          prepare for their examinations.
+        </p>
+      </main>
+
+      <SiteFooter />
+    </>
   );
 }

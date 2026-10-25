@@ -3,131 +3,128 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | DGStudy",
+  title: "Privacy Policy | DGStudy",
   description:
-    "Read the terms and conditions for using DGStudy's Diploma and Polytechnic study notes website.",
+    "Read how DGStudy handles account information, study progress, bookmarks, download history, cookies, third-party services, and data deletion requests.",
   alternates: {
-    canonical: "https://dgstudy.in/terms",
+    canonical: "https://dgstudy.in/privacy-policy",
   },
   openGraph: {
-    title: "Terms of Service | DGStudy",
+    title: "Privacy Policy",
     description:
-      "Terms and conditions for using DGStudy and its educational resources.",
-    url: "https://dgstudy.in/terms",
+      "Learn how DGStudy handles personal information and protects user privacy.",
+    url: "https://dgstudy.in/privacy-policy",
     type: "website",
   },
 };
 
-export default function TermsPage() {
+export default function PrivacyPolicyPage() {
   return (
     <>
       <SiteHeader />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
         <h1 className="text-2xl font-bold text-brand-800">
-          Terms of Service
+          Privacy Policy
         </h1>
 
         <p className="mt-4 leading-7 text-slate-600">
-          Welcome to DGStudy. By accessing or using this website, you
-          agree to these Terms of Service. If you do not agree, please
-          stop using the website.
+          This Privacy Policy explains how DGStudy handles information
+          when you visit or use our website for Diploma and Polytechnic
+          study resources.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          1. Educational Purpose
+          1. Information We May Collect
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          DGStudy provides study notes and other educational resources
-          for Diploma and Polytechnic students. These materials are
-          intended to support learning and exam preparation. We do not
-          guarantee specific examination results.
+          Depending on the features you use, DGStudy may process your
+          account email address, study progress, bookmarks, recently
+          viewed notes, and download history. Technical information
+          such as browser details and basic usage data may also be
+          processed to operate and improve the website.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          2. Permitted Use
+          2. How We Use Information
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          You may access and use the website for lawful personal
-          educational purposes. You must not misuse the website,
-          attempt unauthorized access, interfere with its operation,
-          or use it for unlawful activities.
+          Information may be used to provide account access, remember
+          your study activity, manage bookmarks and downloads, maintain
+          website security, and improve the DGStudy experience.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          3. Notes and Intellectual Property
+          3. Cookies and Similar Technologies
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          Website design, branding, and original content may be
-          protected by applicable intellectual property laws. Do not
-          copy, redistribute, or commercially use content in ways
-          that violate applicable law or the rights of its owner.
-          Third-party materials remain subject to their respective
-          owners&apos; rights.
+          DGStudy and its service providers may use cookies or similar
+          technologies for essential website functions, authentication,
+          preferences, analytics, or advertising where enabled. You can
+          manage cookies through your browser settings. Blocking some
+          cookies may affect certain website features.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          4. Accuracy and Availability
+          4. Third-Party Services
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          We try to keep the notes and website information useful and
-          accurate, but errors or omissions may occur. Website
-          features and content may change, and uninterrupted access
-          cannot be guaranteed.
+          DGStudy uses Supabase for supported database and account
+          services and Netlify for website hosting. These providers
+          may process information needed to deliver their services.
+          If Google Analytics or Google AdSense is enabled, those
+          services may use cookies or similar technologies according
+          to their own privacy policies.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          5. Accounts and Security
+          5. Data Sharing and Security
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          If you create an account, provide accurate information and
-          take reasonable steps to protect your login credentials.
-          Contact DGStudy if you believe your account has been
-          accessed without permission.
+          We do not intend to sell personal information. Information
+          may be processed by service providers, or disclosed where
+          required by law or necessary to protect the website and its
+          users. We take reasonable steps to protect information, but
+          no online service can guarantee absolute security.
         </p>
 
         <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          6. Third-Party Services and Links
+          6. Requesting Data Deletion
         </h2>
         <p className="mt-2 leading-7 text-slate-600">
-          The website may rely on third-party services or link to
-          external websites. DGStudy does not control all third-party
-          services and is not responsible for their independent
-          content or policies.
-        </p>
-
-        <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          7. Limitation of Liability
-        </h2>
-        <p className="mt-2 leading-7 text-slate-600">
-          To the extent permitted by applicable law, DGStudy is not
-          liable for losses arising from reliance on website content,
-          temporary unavailability, or third-party services. Nothing
-          in these terms excludes liability where exclusion is not
-          permitted by law.
-        </p>
-
-        <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          8. Changes to These Terms
-        </h2>
-        <p className="mt-2 leading-7 text-slate-600">
-          We may update these terms when the website or its
-          requirements change. Updated terms will be published on
-          this page.
-        </p>
-
-        <h2 className="mt-6 text-lg font-semibold text-slate-800">
-          9. Contact
-        </h2>
-        <p className="mt-2 leading-7 text-slate-600">
-          If you have questions about these terms, email{" "}
+          If you want to request deletion of your account or associated
+          personal information, contact us at{" "}
           <a
             href="mailto:dgstudy4@gmail.com"
             className="text-brand-700 underline hover:text-brand-800"
           >
             dgstudy4@gmail.com
           </a>
-          .
+          . Please use the email associated with your account. We will
+          review the request and handle it subject to applicable legal
+          requirements and any information that must be retained.
+        </p>
+
+        <h2 className="mt-6 text-lg font-semibold text-slate-800">
+          7. Children and Students
+        </h2>
+        <p className="mt-2 leading-7 text-slate-600">
+          DGStudy provides educational resources for Diploma and
+          Polytechnic students. Users should avoid sharing unnecessary
+          personal information through the website or support channels.
+        </p>
+
+        <h2 className="mt-6 text-lg font-semibold text-slate-800">
+          8. Changes to This Policy
+        </h2>
+        <p className="mt-2 leading-7 text-slate-600">
+          We may update this Privacy Policy when our website features,
+          services, or legal requirements change. The latest version
+          will be published on this page.
+        </p>
+
+        <p className="mt-8 text-sm text-slate-500">
+          For privacy questions, contact dgstudy4@gmail.com.
         </p>
       </main>
 
