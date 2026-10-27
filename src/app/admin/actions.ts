@@ -1,4 +1,6 @@
+
 "use server";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/guards";
@@ -22,25 +24,47 @@ function ordinal(n: number) {
 // ---------- Branches ----------
 export async function createBranch(formData: FormData) {
   const { supabase } = await requireAdmin();
+
   const name = String(formData.get("name") || "").trim();
   const description = String(formData.get("description") || "").trim();
+
   if (!name) return;
 
-  const { data: branch } = await supabase
+  const { data: branch, error } = await supabase
     .from("branches")
-    .insert({ name, slug: slugify(name), description: description || null, order_index: 0 })
+    .insert({
+      name,
+      slug: slugify(name),
+      description: description || null,
+      order_index: 0,
+    })
     .select("id")
     .single();
 
-  // Auto-provision all 6 semesters for a new branch, per spec.
+  if (error) {
+    console.error("CREATE BRANCH FAILED:", error);
+    throw new Error(`Could not create branch: ${error.message}`);
+  }
+
+  // Automatically create all six semesters for a new branch.
   if (branch) {
     const rows = Array.from({ length: 6 }, (_, i) => ({
       branch_id: branch.id,
       semester_number: i + 1,
       name: `${ordinal(i + 1)} Semester`,
-      slug: `${ordinal(i + 1)}-semester`
+      slug: `${ordinal(i + 1)}-semester`,
     }));
-    await supabase.from("semesters").upsert(rows, { onConflict: "branch_id,semester_number" });
+
+    const { error: semesterError } = await supabase
+      .from("semesters")
+      .upsert(rows, { onConflict: "branch_id,semester_number" });
+
+    if (semesterError) {
+      console.error("CREATE SEMESTERS FAILED:", semesterError);
+      throw new Error(
+        `Branch created, but semesters could not be created: ${semesterError.message}`
+      );
+    }
   }
 
   revalidatePath("/admin/branches");
@@ -49,33 +73,51 @@ export async function createBranch(formData: FormData) {
 
 export async function deleteBranch(branchId: string) {
   const { supabase } = await requireAdmin();
-  await supabase.from("branches").delete().eq("id", branchId);
+
+  const { error } = await supabase
+    .from("branches")
+    .delete()
+    .eq("id", branchId);
+
+  if (error) {
+    console.error("DELETE BRANCH FAILED:", error);
+    throw new Error(`Could not delete branch: ${error.message}`);
+  }
+
   revalidatePath("/admin/branches");
   revalidatePath("/branches");
 }
 
-// Ensures all 6 semesters exist for a branch (idempotent) — for branches
-// seeded before this admin action existed.
 export async function ensureSemesters(branchId: string) {
   const { supabase } = await requireAdmin();
+
   const rows = Array.from({ length: 6 }, (_, i) => ({
     branch_id: branchId,
     semester_number: i + 1,
     name: `${ordinal(i + 1)} Semester`,
-    slug: `${ordinal(i + 1)}-semester`
+    slug: `${ordinal(i + 1)}-semester`,
   }));
-  await supabase.from("semesters").upsert(rows, { onConflict: "branch_id,semester_number" });
+
+  const { error } = await supabase
+    .from("semesters")
+    .upsert(rows, { onConflict: "branch_id,semester_number" });
+
+  if (error) {
+    console.error("ENSURE SEMESTERS FAILED:", error);
+    throw new Error(`Could not create semesters: ${error.message}`);
+  }
+
   revalidatePath("/admin/branches");
 }
 
 // ---------- Subjects ----------
-
 export async function createSubject(formData: FormData) {
   const { supabase } = await requireAdmin();
 
-  const semesterId = String(formData.get("semester_id") || "");
+  const semesterId = String(formData.get("semester_id") || "").trim();
   const name = String(formData.get("name") || "").trim();
   const subjectCode = String(formData.get("subject_code") || "").trim();
+  const description = String(formData.get("description") || "").trim();
 
   if (!semesterId || !name) {
     throw new Error("Semester ID or subject name is missing.");
@@ -88,7 +130,8 @@ export async function createSubject(formData: FormData) {
       name,
       slug: slugify(name),
       subject_code: subjectCode || null,
-      order_index: 0
+      description: description || null,
+      order_index: 0,
     })
     .select("id, name")
     .single();
@@ -98,8 +141,6 @@ export async function createSubject(formData: FormData) {
     throw new Error(`Could not create subject: ${error.message}`);
   }
 
-      console.log("SUBJECT CREATED:", data);
-
   const { data: semester, error: semesterError } = await supabase
     .from("semesters")
     .select("branch_id")
@@ -107,6 +148,7 @@ export async function createSubject(formData: FormData) {
     .single();
 
   if (semesterError || !semester) {
+    console.error("LOAD SEMESTER FAILED:", semesterError);
     throw new Error("Subject created, but semester could not be loaded.");
   }
 
@@ -137,13 +179,12 @@ export async function deleteSubject(subjectId: string) {
 }
 
 // ---------- Chapters ----------
-
-
 export async function createChapter(formData: FormData) {
   const { supabase } = await requireAdmin();
 
   const subjectId = String(formData.get("subject_id") || "").trim();
   const name = String(formData.get("name") || "").trim();
+  const description = String(formData.get("description") || "").trim();
 
   if (!subjectId || !name) {
     throw new Error("Subject ID or chapter name is missing.");
@@ -155,7 +196,6 @@ export async function createChapter(formData: FormData) {
     throw new Error("Please enter a valid chapter name.");
   }
 
-  // Check for an existing chapter with the same slug.
   const { data: existing, error: existingError } = await supabase
     .from("chapters")
     .select("id, name")
@@ -192,8 +232,9 @@ export async function createChapter(formData: FormData) {
       subject_id: subjectId,
       name,
       slug: baseSlug,
+      description: description || null,
       chapter_number: nextNumber,
-      order_index: nextNumber
+      order_index: nextNumber,
     })
     .select("id, name")
     .single();
@@ -233,80 +274,178 @@ export async function deleteChapter(chapterId: string) {
   revalidatePath("/branches");
 }
 
-
 // ---------- Notes (PDF upload / replace / publish) ----------
 export async function uploadNote(formData: FormData) {
   const { supabase } = await requireAdmin();
-  const chapterId = String(formData.get("chapter_id") || "");
+
+  const chapterId = String(formData.get("chapter_id") || "").trim();
   const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
   const file = formData.get("file") as File | null;
 
   if (!chapterId || !title || !file || file.size === 0) return;
   if (file.type !== "application/pdf") return;
-  if (file.size > 50 * 1024 * 1024) return; // 50MB cap
+  if (file.size > 50 * 1024 * 1024) return;
 
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from("notes")
     .select("id", { count: "exact", head: true })
     .eq("chapter_id", chapterId);
-  const version = (count ?? 0) + 1;
 
+  if (countError) {
+    console.error("NOTE COUNT FAILED:", countError);
+    throw new Error(`Could not count notes: ${countError.message}`);
+  }
+
+  const version = (count ?? 0) + 1;
   const admin = createAdminClient();
   const path = `${chapterId}/v${version}-${Date.now()}-${slugify(title)}.pdf`;
   const arrayBuffer = await file.arrayBuffer();
 
-  const { error: uploadError } = await admin.storage.from("pdfs").upload(path, arrayBuffer, {
-    contentType: "application/pdf",
-    upsert: false
-  });
-  if (uploadError) return;
+  const { error: uploadError } = await admin.storage
+    .from("pdfs")
+    .upload(path, arrayBuffer, {
+      contentType: "application/pdf",
+      upsert: false,
+    });
 
-  await supabase.from("notes").insert({
+  if (uploadError) {
+    console.error("PDF UPLOAD FAILED:", uploadError);
+    throw new Error(`Could not upload PDF: ${uploadError.message}`);
+  }
+
+  const { error: insertError } = await supabase.from("notes").insert({
     chapter_id: chapterId,
     title,
+    description: description || null,
     storage_path: path,
     file_size: file.size,
     version,
-    published: false
+    published: false,
   });
 
+  if (insertError) {
+    console.error("SAVE NOTE FAILED:", insertError);
+
+    // Avoid leaving an orphaned PDF in storage if its database row fails.
+    await admin.storage.from("pdfs").remove([path]);
+
+    throw new Error(`Could not save note: ${insertError.message}`);
+  }
+
   revalidatePath("/admin/content");
+  revalidatePath("/branches");
 }
 
-export async function replaceNoteFile(noteId: string, formData: FormData) {
+export async function replaceNoteFile(
+  noteId: string,
+  formData: FormData
+) {
   const { supabase } = await requireAdmin();
   const file = formData.get("file") as File | null;
+
   if (!file || file.size === 0 || file.type !== "application/pdf") return;
   if (file.size > 50 * 1024 * 1024) return;
 
-  const { data: note } = await supabase.from("notes").select("storage_path").eq("id", noteId).single();
-  if (!note) return;
+  const { data: note, error: noteError } = await supabase
+    .from("notes")
+    .select("storage_path")
+    .eq("id", noteId)
+    .single();
+
+  if (noteError || !note) {
+    console.error("LOAD NOTE FAILED:", noteError);
+    return;
+  }
 
   const admin = createAdminClient();
   const arrayBuffer = await file.arrayBuffer();
-  const { error } = await admin.storage.from("pdfs").update(note.storage_path, arrayBuffer, {
-    contentType: "application/pdf",
-    upsert: true
-  });
-  if (error) return;
 
-  await supabase.from("notes").update({ file_size: file.size, updated_at: new Date().toISOString() }).eq("id", noteId);
+  const { error } = await admin.storage
+    .from("pdfs")
+    .update(note.storage_path, arrayBuffer, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+
+  if (error) {
+    console.error("REPLACE PDF FAILED:", error);
+    throw new Error(`Could not replace PDF: ${error.message}`);
+  }
+
+  const { error: updateError } = await supabase
+    .from("notes")
+    .update({
+      file_size: file.size,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", noteId);
+
+  if (updateError) {
+    console.error("UPDATE NOTE FAILED:", updateError);
+    throw new Error(`PDF replaced, but note details could not be updated: ${updateError.message}`);
+  }
+
   revalidatePath("/admin/content");
+  revalidatePath("/branches");
 }
 
-export async function togglePublish(noteId: string, currentlyPublished: boolean) {
+export async function togglePublish(
+  noteId: string,
+  currentlyPublished: boolean
+) {
   const { supabase } = await requireAdmin();
-  await supabase.from("notes").update({ published: !currentlyPublished }).eq("id", noteId);
+
+  const { error } = await supabase
+    .from("notes")
+    .update({ published: !currentlyPublished })
+    .eq("id", noteId);
+
+  if (error) {
+    console.error("TOGGLE PUBLISH FAILED:", error);
+    throw new Error(`Could not update publish status: ${error.message}`);
+  }
+
   revalidatePath("/admin/content");
+  revalidatePath("/branches");
 }
 
 export async function deleteNote(noteId: string) {
   const { supabase } = await requireAdmin();
-  const { data: note } = await supabase.from("notes").select("storage_path").eq("id", noteId).single();
+
+  const { data: note, error: noteError } = await supabase
+    .from("notes")
+    .select("storage_path")
+    .eq("id", noteId)
+    .single();
+
+  if (noteError) {
+    console.error("LOAD NOTE FOR DELETE FAILED:", noteError);
+    throw new Error(`Could not load note: ${noteError.message}`);
+  }
+
   if (note) {
     const admin = createAdminClient();
-    await admin.storage.from("pdfs").remove([note.storage_path]);
+    const { error: storageError } = await admin.storage
+      .from("pdfs")
+      .remove([note.storage_path]);
+
+    if (storageError) {
+      console.error("DELETE PDF FAILED:", storageError);
+      throw new Error(`Could not delete PDF file: ${storageError.message}`);
+    }
   }
-  await supabase.from("notes").delete().eq("id", noteId);
+
+  const { error } = await supabase
+    .from("notes")
+    .delete()
+    .eq("id", noteId);
+
+  if (error) {
+    console.error("DELETE NOTE FAILED:", error);
+    throw new Error(`Could not delete note: ${error.message}`);
+  }
+
   revalidatePath("/admin/content");
+  revalidatePath("/branches");
 }
