@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -50,7 +49,7 @@ async function loadPath(
 
   const { data: subject } = await supabase
     .from("subjects")
-    .select("id, name, slug, subject_code")
+    .select("id, name, slug, subject_code, description")
     .eq("semester_id", semester.id)
     .eq("slug", subjectSlug)
     .single();
@@ -86,7 +85,12 @@ export async function generateMetadata({
   }
 
   const title = `${subject.name} — ${semester.name}, ${branch.name}`;
-  const description = `Explore chapter-wise notes and study materials for ${subject.name}, ${semester.name}, ${branch.name} on DGStudy. Prepare for Diploma and Polytechnic examinations with organized study notes.`;
+  const customDescription = subject.description?.trim();
+  const description = customDescription
+    ? customDescription.length > 160
+      ? `${customDescription.slice(0, 157).trimEnd()}...`
+      : customDescription
+    : `Explore chapter-wise notes and study materials for ${subject.name}, ${semester.name}, ${branch.name} on DGStudy. Prepare for Diploma and Polytechnic examinations with organized study notes.`;
   const canonicalUrl = `${siteUrl}/branches/${branch.slug}/${semester.slug}/${subject.slug}`;
 
   return {
@@ -168,6 +172,12 @@ export default async function SubjectPage({
         {subject.subject_code && (
           <p className="text-sm text-slate-600">
             {subject.subject_code}
+          </p>
+        )}
+
+        {subject.description && (
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {subject.description}
           </p>
         )}
 

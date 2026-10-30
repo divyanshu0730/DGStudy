@@ -165,7 +165,7 @@ export default async function ChapterPage({
 
   const { data: note } = await supabase
     .from("notes")
-    .select("id")
+    .select("id, title, description")
     .eq("chapter_id", chapter.id)
     .eq("published", true)
     .order("version", { ascending: false })
@@ -234,6 +234,12 @@ export default async function ChapterPage({
         {chapter.description && (
           <p className="mt-1 text-sm text-slate-600">
             {chapter.description}
+          </p>
+        )}
+
+        {note?.description && (
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            {note.description}
           </p>
         )}
 

@@ -1,4 +1,3 @@
-
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -275,17 +274,28 @@ export async function deleteChapter(chapterId: string) {
 }
 
 // ---------- Notes (PDF upload / replace / publish) ----------
-export async function uploadNote(formData: FormData) {
+// PDFs are uploaded straight from the browser to Supabase Storage using a
+// short-lived signed upload token. This avoids the server-action / Netlify
+// request-size limit (413 error for PDFs of a few MB).
+
+type PrepareUploadResult =
+  | { ok: true; path: string; token: string; version: number }
+  | { ok: false; error: string };
+
+type SimpleResult = { ok: true } | { ok: false; error: string };
+
+const MAX_PDF_BYTES = 50 * 1024 * 1024;
+
+export async function prepareNoteUpload(
+  chapterId: string,
+  title: string
+): Promise<PrepareUploadResult> {
   const { supabase } = await requireAdmin();
 
-  const chapterId = String(formData.get("chapter_id") || "").trim();
-  const title = String(formData.get("title") || "").trim();
-  const description = String(formData.get("description") || "").trim();
-  const file = formData.get("file") as File | null;
-
-  if (!chapterId || !title || !file || file.size === 0) return;
-  if (file.type !== "application/pdf") return;
-  if (file.size > 50 * 1024 * 1024) return;
+  const cleanTitle = title.trim();
+  if (!chapterId || !cleanTitle) {
+    return { ok: false, error: "Chapter or note title is missing." };
+  }
 
   const { count, error: countError } = await supabase
     .from("notes")
@@ -294,33 +304,63 @@ export async function uploadNote(formData: FormData) {
 
   if (countError) {
     console.error("NOTE COUNT FAILED:", countError);
-    throw new Error(`Could not count notes: ${countError.message}`);
+    return { ok: false, error: `Could not count notes: ${countError.message}` };
   }
 
   const version = (count ?? 0) + 1;
+  const path = `${chapterId}/v${version}-${Date.now()}-${slugify(cleanTitle) || "notes"}.pdf`;
+
   const admin = createAdminClient();
-  const path = `${chapterId}/v${version}-${Date.now()}-${slugify(title)}.pdf`;
-  const arrayBuffer = await file.arrayBuffer();
-
-  const { error: uploadError } = await admin.storage
+  const { data, error } = await admin.storage
     .from("pdfs")
-    .upload(path, arrayBuffer, {
-      contentType: "application/pdf",
-      upsert: false,
-    });
+    .createSignedUploadUrl(path);
 
-  if (uploadError) {
-    console.error("PDF UPLOAD FAILED:", uploadError);
-    throw new Error(`Could not upload PDF: ${uploadError.message}`);
+  if (error || !data) {
+    console.error("SIGNED UPLOAD URL FAILED:", error);
+    return {
+      ok: false,
+      error: `Could not prepare upload: ${error?.message ?? "unknown error"}`,
+    };
+  }
+
+  return { ok: true, path, token: data.token, version };
+}
+
+export async function saveUploadedNote(input: {
+  chapterId: string;
+  title: string;
+  description: string;
+  path: string;
+  size: number;
+  version: number;
+}): Promise<SimpleResult> {
+  const { supabase } = await requireAdmin();
+
+  const title = input.title.trim();
+  const description = input.description.trim();
+
+  if (!input.chapterId || !title) {
+    return { ok: false, error: "Chapter or note title is missing." };
+  }
+
+  if (
+    !input.path.startsWith(`${input.chapterId}/`) ||
+    !input.path.endsWith(".pdf")
+  ) {
+    return { ok: false, error: "Invalid file path." };
+  }
+
+  if (input.size <= 0 || input.size > MAX_PDF_BYTES) {
+    return { ok: false, error: "File size must be between 1 byte and 50 MB." };
   }
 
   const { error: insertError } = await supabase.from("notes").insert({
-    chapter_id: chapterId,
+    chapter_id: input.chapterId,
     title,
     description: description || null,
-    storage_path: path,
-    file_size: file.size,
-    version,
+    storage_path: input.path,
+    file_size: input.size,
+    version: input.version,
     published: false,
   });
 
@@ -328,66 +368,110 @@ export async function uploadNote(formData: FormData) {
     console.error("SAVE NOTE FAILED:", insertError);
 
     // Avoid leaving an orphaned PDF in storage if its database row fails.
-    await admin.storage.from("pdfs").remove([path]);
+    const admin = createAdminClient();
+    await admin.storage.from("pdfs").remove([input.path]);
 
-    throw new Error(`Could not save note: ${insertError.message}`);
+    return { ok: false, error: `Could not save note: ${insertError.message}` };
   }
 
   revalidatePath("/admin/content");
   revalidatePath("/branches");
+  return { ok: true };
 }
 
-export async function replaceNoteFile(
-  noteId: string,
-  formData: FormData
-) {
+export async function prepareReplaceUpload(
+  noteId: string
+): Promise<PrepareUploadResult> {
   const { supabase } = await requireAdmin();
-  const file = formData.get("file") as File | null;
-
-  if (!file || file.size === 0 || file.type !== "application/pdf") return;
-  if (file.size > 50 * 1024 * 1024) return;
 
   const { data: note, error: noteError } = await supabase
     .from("notes")
-    .select("storage_path")
+    .select("chapter_id, title, version")
     .eq("id", noteId)
     .single();
 
   if (noteError || !note) {
     console.error("LOAD NOTE FAILED:", noteError);
-    return;
+    return { ok: false, error: "Could not find this note." };
   }
 
+  const path = `${note.chapter_id}/v${note.version}-${Date.now()}-${slugify(note.title) || "notes"}.pdf`;
+
   const admin = createAdminClient();
-  const arrayBuffer = await file.arrayBuffer();
-
-  const { error } = await admin.storage
+  const { data, error } = await admin.storage
     .from("pdfs")
-    .update(note.storage_path, arrayBuffer, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
+    .createSignedUploadUrl(path);
 
-  if (error) {
-    console.error("REPLACE PDF FAILED:", error);
-    throw new Error(`Could not replace PDF: ${error.message}`);
+  if (error || !data) {
+    console.error("SIGNED UPLOAD URL FAILED:", error);
+    return {
+      ok: false,
+      error: `Could not prepare upload: ${error?.message ?? "unknown error"}`,
+    };
+  }
+
+  return { ok: true, path, token: data.token, version: note.version };
+}
+
+export async function finishReplaceNote(
+  noteId: string,
+  newPath: string,
+  size: number
+): Promise<SimpleResult> {
+  const { supabase } = await requireAdmin();
+
+  const { data: note, error: noteError } = await supabase
+    .from("notes")
+    .select("chapter_id, storage_path")
+    .eq("id", noteId)
+    .single();
+
+  if (noteError || !note) {
+    console.error("LOAD NOTE FAILED:", noteError);
+    return { ok: false, error: "Could not find this note." };
+  }
+
+  if (!newPath.startsWith(`${note.chapter_id}/`) || !newPath.endsWith(".pdf")) {
+    return { ok: false, error: "Invalid file path." };
+  }
+
+  if (size <= 0 || size > MAX_PDF_BYTES) {
+    return { ok: false, error: "File size must be between 1 byte and 50 MB." };
   }
 
   const { error: updateError } = await supabase
     .from("notes")
     .update({
-      file_size: file.size,
+      storage_path: newPath,
+      file_size: size,
       updated_at: new Date().toISOString(),
     })
     .eq("id", noteId);
 
   if (updateError) {
     console.error("UPDATE NOTE FAILED:", updateError);
-    throw new Error(`PDF replaced, but note details could not be updated: ${updateError.message}`);
+    const admin = createAdminClient();
+    await admin.storage.from("pdfs").remove([newPath]);
+    return {
+      ok: false,
+      error: `Could not update note: ${updateError.message}`,
+    };
+  }
+
+  // Remove the old PDF only after the database points to the new one.
+  if (note.storage_path && note.storage_path !== newPath) {
+    const admin = createAdminClient();
+    const { error: removeError } = await admin.storage
+      .from("pdfs")
+      .remove([note.storage_path]);
+    if (removeError) {
+      console.error("REMOVE OLD PDF FAILED:", removeError);
+    }
   }
 
   revalidatePath("/admin/content");
   revalidatePath("/branches");
+  return { ok: true };
 }
 
 export async function togglePublish(
@@ -444,6 +528,70 @@ export async function deleteNote(noteId: string) {
   if (error) {
     console.error("DELETE NOTE FAILED:", error);
     throw new Error(`Could not delete note: ${error.message}`);
+  }
+
+  revalidatePath("/admin/content");
+  revalidatePath("/branches");
+}
+
+// ---------- Edit descriptions (existing rows) ----------
+export async function updateSubjectDescription(
+  subjectId: string,
+  formData: FormData
+) {
+  const { supabase } = await requireAdmin();
+  const description = String(formData.get("description") || "").trim();
+
+  const { error } = await supabase
+    .from("subjects")
+    .update({ description: description || null })
+    .eq("id", subjectId);
+
+  if (error) {
+    console.error("UPDATE SUBJECT DESCRIPTION FAILED:", error);
+    throw new Error(`Could not update subject description: ${error.message}`);
+  }
+
+  revalidatePath("/admin/content");
+  revalidatePath("/branches");
+}
+
+export async function updateChapterDescription(
+  chapterId: string,
+  formData: FormData
+) {
+  const { supabase } = await requireAdmin();
+  const description = String(formData.get("description") || "").trim();
+
+  const { error } = await supabase
+    .from("chapters")
+    .update({ description: description || null })
+    .eq("id", chapterId);
+
+  if (error) {
+    console.error("UPDATE CHAPTER DESCRIPTION FAILED:", error);
+    throw new Error(`Could not update chapter description: ${error.message}`);
+  }
+
+  revalidatePath("/admin/content");
+  revalidatePath("/branches");
+}
+
+export async function updateNoteDescription(
+  noteId: string,
+  formData: FormData
+) {
+  const { supabase } = await requireAdmin();
+  const description = String(formData.get("description") || "").trim();
+
+  const { error } = await supabase
+    .from("notes")
+    .update({ description: description || null })
+    .eq("id", noteId);
+
+  if (error) {
+    console.error("UPDATE NOTE DESCRIPTION FAILED:", error);
+    throw new Error(`Could not update note description: ${error.message}`);
   }
 
   revalidatePath("/admin/content");

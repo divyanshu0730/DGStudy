@@ -1,15 +1,20 @@
-
 import { requireAdmin } from "@/lib/supabase/guards";
 import {
   createSubject,
   deleteSubject,
   createChapter,
   deleteChapter,
-  uploadNote,
-  replaceNoteFile,
   togglePublish,
   deleteNote,
+  updateSubjectDescription,
+  updateChapterDescription,
+  updateNoteDescription,
 } from "@/app/admin/actions";
+import {
+  NoteUploadForm,
+  ReplaceNoteForm,
+  DescriptionEditor,
+} from "./NoteForms";
 
 export default async function AdminContentPage({
   searchParams,
@@ -56,6 +61,7 @@ export default async function AdminContentPage({
   }
 
   const subjectId = searchParams.subject || subjects?.[0]?.id;
+  const currentSubject = subjects?.find((subject) => subject.id === subjectId);
 
   const { data: chapters, error: chaptersError } = subjectId
     ? await supabase
@@ -217,15 +223,21 @@ export default async function AdminContentPage({
             ))}
           </div>
 
-          {subjects?.find((subject) => subject.id === subjectId)
-            ?.description && (
-            <p className="mt-2 text-sm text-slate-500">
-              Subject description:{" "}
-              {
-                subjects.find((subject) => subject.id === subjectId)
-                  ?.description
-              }
-            </p>
+          {currentSubject && (
+            <details className="card mt-3 p-3 text-sm">
+              <summary className="cursor-pointer font-medium text-slate-700">
+                Subject description (SEO) — {currentSubject.name}
+                {currentSubject.description ? "" : " — not set"}
+              </summary>
+
+              <DescriptionEditor
+                key={currentSubject.id}
+                action={updateSubjectDescription.bind(null, currentSubject.id)}
+                initialValue={currentSubject.description ?? ""}
+                placeholder="Subject SEO description"
+                buttonLabel="Save subject description"
+              />
+            </details>
           )}
         </>
       )}
@@ -281,49 +293,22 @@ export default async function AdminContentPage({
                   </form>
                 </div>
 
-                {chapter.description && (
-                  <p className="mt-2 text-sm text-slate-500">
-                    Chapter description: {chapter.description}
-                  </p>
-                )}
+                <details className="mt-2 text-sm">
+                  <summary className="cursor-pointer text-slate-600">
+                    Chapter description (SEO)
+                    {chapter.description ? "" : " — not set"}
+                  </summary>
 
-                {/* PDF upload with SEO description */}
-                <form
-                  action={uploadNote}
-                  className="mt-3 flex flex-col gap-3 rounded-xl bg-slate-50 p-3"
-                >
-                  <input
-                    type="hidden"
-                    name="chapter_id"
-                    value={chapter.id}
+                  <DescriptionEditor
+                    action={updateChapterDescription.bind(null, chapter.id)}
+                    initialValue={chapter.description ?? ""}
+                    placeholder="Chapter SEO description"
+                    buttonLabel="Save chapter description"
                   />
+                </details>
 
-                  <input
-                    name="title"
-                    placeholder="Note title"
-                    className="input w-full"
-                    required
-                  />
-
-                  <textarea
-                    name="description"
-                    placeholder="PDF Notes SEO description (optional)"
-                    className="input min-h-20 w-full"
-                    rows={3}
-                  />
-
-                  <input
-                    type="file"
-                    name="file"
-                    accept="application/pdf"
-                    required
-                    className="text-xs"
-                  />
-
-                  <button className="btn-secondary self-start text-xs">
-                    Upload PDF
-                  </button>
-                </form>
+                {/* PDF upload with SEO description (direct to storage) */}
+                <NoteUploadForm chapterId={chapter.id} />
 
                 {/* Uploaded notes */}
                 <div className="mt-3 space-y-2">
@@ -352,31 +337,23 @@ export default async function AdminContentPage({
                               : ""}
                           </div>
 
-                          {note.description && (
-                            <p className="mt-1 text-xs text-slate-500">
-                              SEO description: {note.description}
-                            </p>
-                          )}
+                          <details className="mt-1 text-xs">
+                            <summary className="cursor-pointer text-slate-500">
+                              Note description (SEO)
+                              {note.description ? "" : " — not set"}
+                            </summary>
+
+                            <DescriptionEditor
+                              action={updateNoteDescription.bind(null, note.id)}
+                              initialValue={note.description ?? ""}
+                              placeholder="PDF notes SEO description"
+                              buttonLabel="Save note description"
+                            />
+                          </details>
                         </div>
 
                         <div className="flex shrink-0 flex-wrap items-center gap-2">
-                          <form
-                            action={replaceNoteFile.bind(null, note.id)}
-                            className="flex items-center gap-1"
-                            title="Replace this PDF with a new version"
-                          >
-                            <input
-                              type="file"
-                              name="file"
-                              accept="application/pdf"
-                              required
-                              className="w-28 text-[11px]"
-                            />
-
-                            <button className="btn-secondary text-xs">
-                              Replace
-                            </button>
-                          </form>
+                          <ReplaceNoteForm noteId={note.id} />
 
                           <form
                             action={togglePublish.bind(
