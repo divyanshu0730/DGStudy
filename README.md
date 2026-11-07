@@ -8,7 +8,7 @@ A mobile-first study notes platform for Diploma/Polytechnic students.
 
 **For students (no login needed to browse and download)**
 - Branch → Semester → Subject → Chapter → Notes (PDF) navigation with clean URLs and breadcrumbs
-- In-app PDF viewer and PDF download
+- In-Website PDF viewer and PDF download
 - Global search across branches, subjects, chapters and note titles
 - Optional account: bookmarks, mark chapters as completed, progress bar, recently viewed, download history
 
@@ -24,7 +24,7 @@ A mobile-first study notes platform for Diploma/Polytechnic students.
 ## Tech Stack
 - Next.js 14 (App Router, Server Actions), TypeScript, Tailwind CSS
 - Supabase: Postgres, Auth, Storage
-- Deployed on Vercel
+- Deployed on Netlify
 
 ## Security
 - Row-level security (RLS) on every table
@@ -48,7 +48,7 @@ Admin SQL:
     where id = (select id from auth.users where email = 'you@example.com');
 
 ## Deployment
-Push to GitHub, import the repo in Vercel, add the same environment variables, and deploy.
+Push to GitHub, import the repo in Netlify, add the same environment variables in Site settings → Environment variables, and deploy.
 
 ## Roadmap
 - Password reset and email verification
